@@ -7,7 +7,7 @@ const lambda = new AWS.Lambda({ region: "eu-central-1" });
 const getResto = async (uid) => {
     return await new Promise((resolve, reject) => {
         var params = {
-            FunctionName: 'GetRestaurant', // the lambda function we are going to invoke
+            FunctionName: 'GetRestaurant',
             Payload: JSON.stringify({
                 uid,
             }),
@@ -26,7 +26,26 @@ const getResto = async (uid) => {
 const getRestosByType = async (type) => {
     return await new Promise((resolve, reject) => {
         var params = {
-            FunctionName: 'GetRestaurantByType', // the lambda function we are going to invoke
+            FunctionName: 'GetRestaurantByType',
+            Payload: JSON.stringify({
+                type,
+            }),
+        };
+    
+        lambda.invoke(params, (err, results) => {
+        if (err) {
+            reject(err);
+        } else {
+            resolve(results.Payload);
+        }
+        });
+    });
+};
+
+const addData = async (type) => {
+    return await new Promise((resolve, reject) => {
+        var params = {
+            FunctionName: 'AddData',
             Payload: JSON.stringify({
                 type,
             }),
@@ -166,6 +185,7 @@ const FindRestByTypeIntentHandler = {
     handle(handlerInput) {
         const type = handlerInput.requestEnvelope.request.intent.slots.restaurant.value;
         const restos = getRestosByType(type);
+        addData(type);
         const speakOutput = `Voici les ${type} à proximité : ${restos}`;
         return handlerInput.responseBuilder
             .speak(speakOutput)
